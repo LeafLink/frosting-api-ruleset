@@ -4,17 +4,28 @@ const {Document, Parsers} = require('@stoplight/spectral');
 
 /**
  * get a YAML document.
- *
- * @param {String} key A key name for some property within a properties attribute of the document.
+ * if no over rides provided, returns a ruleset valid document
+ * @param {Object} options with below possible key values
+ * {String} responseContentPropertyKey name of the key within responses.content.properties
+ * {String} filterParamName A keys value for a query filter
  * @return {Document} The document.
  */
-const getDocument = (key) => {
+const getDocument = ({responseContentPropertyKey = 'data', filterParamName = 'filter[email]'}) => {
 
   return new Document(`
     openapi: 3.0.2
     paths:
       /some_path:
         get:
+          operationId: GET/v1/leaflink/users
+          description: Fetch a list of Users
+          parameters:
+          - name: ${filterParamName}
+            required: false
+            in: query
+            description: email
+            schema:
+              type: string
           responses:
             '200':
               content:
@@ -24,10 +35,10 @@ const getDocument = (key) => {
                     required:
                     - data
                     properties:
-                      ${key}:
+                      ${responseContentPropertyKey}:
                         type: array
                         items:
-                          $ref: '#/components/schemas/User'
+                          $refs: '#/components/schemas/User'
     components:
       schemas:
         User:

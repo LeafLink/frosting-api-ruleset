@@ -1,0 +1,519 @@
+extends:
+  - spectral:oas
+rules:
+  request-content-type:
+    description: "All JSON:API request bodies MUST be received with the header Content-Type: application/vnd.api+json"
+    documentationUrl: https://jsonapi.org/format/#content-negotiation-clients
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths[*].*.requestBody.content
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - application/vnd.api+json
+  response-content-type:
+    description: "All JSON:API response bodies MUST be returned with the header Content-Type: application/vnd.api+json"
+    documentationUrl: https://jsonapi.org/format/#content-negotiation-servers
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths[*].*.responses.*.content
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - application/vnd.api+json
+  415-406-response-codes:
+    description: Servers MUST document and support a 415 and 406 on all paths in case of invalid media types
+    documentationUrl: https://jsonapi.org/format/#content-negotiation-servers
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths[*].*.responses
+    then:
+      - field: "415"
+        function: truthy
+      - field: "406"
+        function: truthy
+  top-level-json-object:
+    description: A JSON object MUST be at the root of every JSON:API request/response body containing data.
+    documentationUrl: https://jsonapi.org/format/#document-top-level
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+  top-level-json-properties:
+    description: Must follow top level JSON:API document properties.
+    documentationUrl: https://jsonapi.org/format/#document-top-level
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema.properties
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - data
+          - meta
+          - errors
+          - links
+          - included
+          - jsonapi
+  top-level-json-properties-included:
+    description: data property must exist if included is returned
+    documentationUrl: https://jsonapi.org/format/#document-top-level
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'included')]^
+    then:
+      field: data
+      function: truthy
+  top-level-json-properties-errors:
+    description: data property must not exist if errors is returned
+    documentationUrl: https://jsonapi.org/format/#document-top-level
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'errors')]^
+    then:
+      field: data
+      function: falsy
+  jsonapi-object-schema:
+    description: jsonapi object must match schema
+    documentationUrl: https://jsonapi.org/format/#document-jsonapi-object
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'jsonapi')]
+    then:
+      - function: schema
+        functionOptions:
+          schema:
+            type: object
+            required:
+              - properties
+              - type
+              - additionalProperties
+            properties:
+              type:
+                type: string
+                enum:
+                  - object
+              properties:
+                type: object
+                properties:
+                  version:
+                    type: object
+                    required:
+                      - type
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - string
+                  meta:
+                    type: object
+                    required:
+                      - type
+                    properties:
+                      type:
+                        type: string
+                        enum:
+                          - object
+                      additionalProperties:
+                        type: boolean
+              additionalProperties:
+                type: boolean
+      - field: additionalProperties
+        function: falsy
+  attributes-object-type:
+    description: The value of the attributes key MUST be an object (an “attributes object”)
+    documentationUrl: https://jsonapi.org/format/#document-resource-object-attributes
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'attributes')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+  attributes-object-properties:
+    description: Any object that constitutes or is contained in an attribute MUST NOT contain a relationships or links member.
+    documentationUrl: https://jsonapi.org/format/#document-resource-object-attributes
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'attributes')].properties
+    then:
+      - field: relationships
+        function: falsy
+      - field: links
+        function: falsy
+  resource-identification-property:
+    description: Every resource object MUST contain an id member and a type member. The values of the id and type members MUST be strings.
+    documentationUrl: https://jsonapi.org/format/#document-resource-object-identification
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'data' || @property === 'included')]..allOf.*.properties
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - type
+          - id
+  resource-identification-type:
+    description: Every resource object MUST contain an id member and a type member. The values of the id and type members MUST be strings.
+    documentationUrl: https://jsonapi.org/format/#document-resource-object-identification
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'data' || @property === 'included')]..allOf.*.properties[?(@property === 'id' || @property === 'type')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - string
+  resource-object-properties-object:
+    description: Must follow resource object properties
+    documentationUrl: https://jsonapi.org/format/#document-resource-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'data' || @property === 'included')][?(@property === 'type' && @ === 'object')]^.properties
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - type
+          - id
+          - attributes
+          - relationships
+          - links
+          - meta
+  resource-object-properties-array:
+    description: Must follow resource object properties
+    documentationUrl: https://jsonapi.org/format/#document-resource-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'data' || @property === 'included')][?(@property === 'type' && @ === 'array')]^..allOf.*.properties
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - type
+          - id
+          - attributes
+          - relationships
+          - links
+          - meta
+  resource-object-properties-type-object:
+    description: Top level members of resource object must be of type object
+    documentationUrl: https://jsonapi.org/format/#document-resource-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'data' || @property === 'included')][?(@property === 'type' && @ === 'object')]^.properties[?(@property === 'attributes' || @property === 'relationships' || @property === 'links' || @property === 'meta')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+  resource-object-properties-type-array:
+    description: Top level members of resource object must be of type object
+    documentationUrl: https://jsonapi.org/format/#document-resource-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'data' || @property === 'included')][?(@property === 'type' && @ === 'array')]^..allOf.*.properties[?(@property === 'attributes' || @property === 'relationships' || @property === 'links' || @property === 'meta')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+  resource-object-properties-included-object:
+    description: A resource object must contain the top-level members type and id
+    documentationUrl: https://jsonapi.org/format/#document-resource-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths.*.[?(@property === 'requestBody' && @parentProperty !== 'post' || @property === 'responses')]..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'data' || @property === 'included')][?(@property === 'type' && @ === 'object')]^.properties
+    then:
+      - field: type
+        function: truthy
+      - field: id
+        function: truthy
+  resource-object-properties-included-array:
+    description: A resource object must contain the top-level members type and id
+    documentationUrl: https://jsonapi.org/format/#document-resource-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths.*.[?(@property === 'requestBody' && @parentProperty !== 'post' || @property === 'responses')]..content[?(@property === 'application/vnd.api+json')].schema.properties[?(@property === 'data' || @property === 'included')][?(@property === 'type' && @ === 'array')]^..allOf.*.properties
+    then:
+      - field: type
+        function: truthy
+      - field: id
+        function: truthy
+  resource-object-id-exception:
+    description: The id member is not required when the resource object originates at the client and represents a new resource to be created on the server
+    documentationUrl: https://jsonapi.org/format/#document-resource-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..[?(@property === 'post')][?(@property === 'requestBody')]..schema.properties[?(@property === 'data' || @property === 'included')].properties
+    then:
+      field: type
+      function: truthy
+  links-object:
+    description: The value of each links member MUST be an object (a “links object”)
+    documentationUrl: https://jsonapi.org/format/#document-meta
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'links')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+  links-object-schema-type:
+    description: A link must be represented as either a string containing the link's URL or an object
+    documentationUrl: https://jsonapi.org/format/#document-links
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'links')].properties.'*'
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+          - string
+  links-object-schema-properties:
+    description: An object (“link object”) which can contain the following members (href and meta)
+    documentationUrl: https://jsonapi.org/format/#document-links
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'links')].properties.'*'.properties
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - href
+          - meta
+  links-object-schema-properties-href:
+    description: Href is a string containing the link's URL
+    documentationUrl: https://jsonapi.org/format/#document-links
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'links')].properties.'*'.properties[?(@property === 'href')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - string
+  meta-object-schema:
+    description: The value of each meta member MUST be an object (a “meta object”)
+    documentationUrl: https://jsonapi.org/format/#document-meta
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $..properties[?(@property === 'meta')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+  error-object-type:
+    description: Error objects MUST be returned as an array keyed by errors in the top level of a JSON:API document.
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - array
+  error-object-properties:
+    description: Must follow error object properties.
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]..allOf.*.properties
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - id
+          - links
+          - status
+          - code
+          - title
+          - detail
+          - source
+          - meta
+  error-object-members-type-object:
+    description: Links, source, and meta (if included) must be an object
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]..allOf.*.properties[?(@property === 'links' || @property === 'meta' || @property === 'source')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - object
+  error-object-members-type-string:
+    description: Status, code, title, detail, and source members (if included) must be strings
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]..allOf.*.properties[?(@property === 'status' || @property === 'code' || @property === 'title' || @property === 'detail')]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - string
+  error-object-links-properties:
+    description: "Links object inside an error object must include an 'about' member "
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]..allOf.*.properties[links].properties
+    then:
+      field: about
+      function: truthy
+  error-object-source-properties:
+    description: Must follow source object properties
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]..allOf.*.properties[source].properties
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values:
+          - pointer
+          - parameter
+  error-object-source-parameter-type:
+    description: Parameter, if included in source object, must be of type string
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]..allOf.*.properties[source].properties[parameter]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - string
+  error-object-source-pointer-type:
+    description: Pointer, if included in source object, must be of type string or array
+    documentationUrl: https://jsonapi.org/format/#error-objects
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses[?(@property >= '400' && @property <= '599')].content[application/vnd.api+json].schema.properties[errors]..allOf.*.properties[source].properties[pointer]
+    then:
+      field: type
+      function: enumeration
+      functionOptions:
+        values:
+          - string
+          - array
+  member-name-allowed-characters:
+    description: All member names must be greater than length 1 and contain only allowed characters.
+    documentationUrl: https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2434302607/Frosting+API+Specification+JSON+API+Profile#Naming
+    message: "{{description}}"
+    severity: error
+    given: $..properties.
+    then:
+      - field: "@key"
+        function: length
+        functionOptions:
+          min: 1
+      - field: "@key"
+        function: pattern
+        functionOptions:
+          match: ^[A-Za-z0-9][A-Za-z0-9_-]*[A-Za-z0-9]$
+  frosting-delete-return-codes:
+    description: DELETEs must contain at least 204 and 404 response codes.
+    documentationUrl: https://jsonapi.org/format/#crud-deleting
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..delete.responses
+    then:
+      - field: "204"
+        function: truthy
+      - field: "404"
+        function: truthy
+  no-whitespace-or-hyphens:
+    description: Paths must not contain whitespace or hyphens.
+    documentationUrl: https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2434302607/Frosting+API+Specification+JSON+API+Profile#%5BPath-Naming-Conventions%5D
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths.*~
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: /[\s-]/img
+  frosting-member-name-format:
+    description: All member names must be camel cased, start and end with a-z, and only contain alphanumerics.
+    documentationUrl: https://jsonapi.org/recommendations/#naming
+    message: "{{description}}"
+    severity: error
+    given: $..properties.
+    then:
+      - field: "@key"
+        function: casing
+        functionOptions:
+          type: camel
+      - field: "@key"
+        function: pattern
+        functionOptions:
+          match: ^[a-z][A-Za-z0-9]*[a-z]$
+  page-query-arguments-name:
+    description: Pagination query param must be page[number|size|cursor].
+    documentationUrl: https://jsonapi.org/format/#fetching-pagination
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..get.parameters.[?(@.in === 'query' && @.name.match(/^page.*?/i))].name
+    then:
+      - function: enumeration
+        functionOptions:
+          values:
+            - page[number]
+            - page[size]
+            - page[cursor]
+  page-query-arguments-size-number:
+    description: Pagination query parameters size and number must be integers.
+    documentationUrl: https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2434302607/Frosting+API+Specification+JSON+API+Profile
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..get.parameters.[?(@.in === 'query' && (@.name === 'page[size]' || @.name === 'page[number]'))].schema.type
+    then:
+      - function: enumeration
+        functionOptions:
+          values:
+            - integer
+  page-query-arguments-cursor:
+    description: Pagination query parameter cursor must be a string.
+    documentationUrl: https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2434302607/Frosting+API+Specification+JSON+API+Profile
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..get.parameters.[?(@.in === 'query' && @.name === 'page[cursor]')].schema.type
+    then:
+      - function: enumeration
+        functionOptions:
+          values:
+            - string

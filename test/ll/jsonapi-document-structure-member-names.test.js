@@ -21,7 +21,7 @@ describe('jsonapi-document-structure-member-names ruleset', function () {
 
     it('passes when all properties data members meet the character rules', function (done) {
 
-      const goodDocument = getDocument('data');
+      const goodDocument = getDocument({'responseContentPropertyKey': 'data'});
 
       spectral.loadRuleset(RULESET_FILE)
         .then(() => {
@@ -40,7 +40,7 @@ describe('jsonapi-document-structure-member-names ruleset', function () {
 
     it('fails when a property is 0 characters long', function (done) {
 
-      const goodDocument = getDocument('""');
+      const goodDocument = getDocument({'responseContentPropertyKey': '""'});
 
       spectral.loadRuleset(RULESET_FILE)
         .then(() => {
@@ -62,7 +62,7 @@ describe('jsonapi-document-structure-member-names ruleset', function () {
 
       ['"lastName@"', '"@lastName"', '"last@Name"'].forEach(function (key) {
 
-        const goodDocument = getDocument(key);
+        const goodDocument = getDocument({'responseContentPropertyKey': key});
 
         spectral.loadRuleset(RULESET_FILE)
           .then(() => {

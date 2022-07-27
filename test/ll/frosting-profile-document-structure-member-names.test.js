@@ -21,7 +21,7 @@ describe('frosting-profile-document-structure-member-names ruleset', function ()
 
     it('passes when all properties data members meet the character rules', function (done) {
 
-      const goodDocument = getDocument('firstName');
+      const goodDocument = getDocument({'responseContentPropertyKey': 'firstName'});
 
       spectral.loadRuleset(RULESET_FILE)
         .then(() => {
@@ -40,7 +40,7 @@ describe('frosting-profile-document-structure-member-names ruleset', function ()
 
     it('fails when a property is not camel case', function (done) {
 
-      const goodDocument = getDocument('first_name');
+      const goodDocument = getDocument({'responseContentPropertyKey': 'first_name'});
 
       spectral.loadRuleset(RULESET_FILE)
         .then(() => {
@@ -62,7 +62,7 @@ describe('frosting-profile-document-structure-member-names ruleset', function ()
 
       ['"FirstName"', '"firstNamE"', '"first$Name"'].forEach(function (key) {
 
-        const goodDocument = getDocument(key);
+        const goodDocument = getDocument({'responseContentPropertyKey': key});
 
         spectral.loadRuleset(RULESET_FILE)
           .then(() => {

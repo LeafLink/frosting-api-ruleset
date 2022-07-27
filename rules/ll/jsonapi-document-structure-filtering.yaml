@@ -1,0 +1,17 @@
+# Document Structure - Filtering
+# https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2434302607/Frosting+API+Specification+JSON+API+Profile#6.7%5B.1%5D-Filtering-Operations
+
+# all rules in this file MUST have corresponding tests
+
+rules:
+  filter-query-arguments:
+    description: "The URL filter arguments must take the shape filter[fieldName.fieldlookup] or filter[field]"
+    documentationUrl: 'https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2434302607/Frosting+API+Specification+JSON+API+Profile#6.7%5B.1%5D-Filtering-Operations'
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..get.parameters.[?(@.in === 'query' && @.name.match(/^filter.*?/i))]
+    then:
+      field: name
+      function: pattern
+      functionOptions:
+        match: ^filter\[[a-z]([A-Za-z.](?!\.{2,}))*[a-z]\]$

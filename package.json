@@ -7,7 +7,8 @@
     "test": "./node_modules/.bin/eslint test/ && ./node_modules/.bin/mocha --recursive",
     "lint": "./node_modules/.bin/eslint test/",
     "testwin": "C:/Spectral4/spectral-jsonapi-ruleset/node_modules/.bin/eslint test/ && C:/Spectral4/spectral-jsonapi-ruleset/node_modules/.bin/mocha --recursive",
-    "lintwin": "C:/Spectral4/spectral-jsonapi-ruleset/node_modules/.bin/eslint test/"
+    "lintwin": "C:/Spectral4/spectral-jsonapi-ruleset/node_modules/.bin/eslint test/",
+    "compile": "./bin/build.js"
   },
   "repository": {
     "type": "git",
@@ -38,5 +39,9 @@
   },
   "husky": {
     "hooks": {}
+  },
+  "dependencies": {
+    "yaml": "^2.1.1",
+    "yargs": "^17.5.1"
   }
 }

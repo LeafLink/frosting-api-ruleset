@@ -16,3 +16,4 @@ extends:
   - ./rules/ll/frosting-profile-ruleset.yaml
   - ./rules/ll/frosting-profile-document-path-resource-plural-inflection.yaml
   - ./rules/ll/frosting-profile-document-path-response-resource-singular-inflection.yaml
+  - ./rules/ll/frosting-responses-rate-limit.yaml

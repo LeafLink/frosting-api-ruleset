@@ -1,0 +1,68 @@
+# Rate Limit Responses convention
+# https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2491875330/Frosting+Rate+Limiting+Strategy#Outcome
+
+rules:
+  rate-limit-all-headers-present:
+    description: "Only for 429 all rate-limit headers must be included."
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..*.responses.429..headers
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required:
+            - RateLimit-Reset
+            - RateLimit-Limit
+            - RateLimit-Remaining
+            - Retry-After
+            - RateLimit-Policy
+
+  rate-limit-basic-headers-present:
+    description: "For non-429 responses, must include the basic rate limit headers."
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..*.responses.*..headers
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required:
+            - RateLimit-Reset
+            - RateLimit-Limit
+            - RateLimit-Remaining
+
+  rate-limit-schema-integer-types:
+    description: "RateLimit-Limit, RateLimit-Remaining and Retry-After must be integers."
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses.*.headers.[RateLimit-Limit,RateLimit-Remaining,Retry-After].schema.type
+    then:
+      function: enumeration
+      functionOptions:
+        values:
+          - integer
+
+  rate-limit-schema-string-types:
+    description: "RateLimit-Policy and RateLimit-Reset must be strings."
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses.*.headers.[RateLimit-Policy,RateLimit-Reset].schema.type
+    then:
+      function: enumeration
+      functionOptions:
+        values:
+          - string
+
+  rate-limit-reset-format-type:
+    description: "RateLimit-Reset format must be date-time"
+    message: "{{path}} - {{description}}"
+    severity: error
+    given: $.paths..responses.*.headers.RateLimit-Reset.schema.format
+    then:
+      function: enumeration
+      functionOptions:
+        values:
+          - date-time

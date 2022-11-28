@@ -5,3 +5,5 @@
 
 extends:
   - ./upstream-ruleset.yaml
+  - ./rules/ll/frosting-responses-rate-limit.yaml
+  - ./rules/ll/frosting-headers-auth.yaml

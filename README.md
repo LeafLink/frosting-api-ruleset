@@ -37,7 +37,7 @@ permissions:
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   run: |
-    git config user.email "automation@leaflink.com"
+    git config user.email "leaflink-automation@leaflink.com"
     git config user.name "LeafLink Automation"
     if [[ `git status --porcelain | grep docs/auto-spec/frosting-oas.yaml` ]]; then
       git add ./docs/auto-spec/frosting-oas.yaml

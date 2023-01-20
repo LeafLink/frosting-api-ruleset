@@ -2,17 +2,3 @@
 
 extends:
   - spectral:oas
-
-  - ./jsonapi-ruleset.yaml
-
-  - ./rules/jsonapi-document-structure-resource-attributes.yaml
-  - ./rules/jsonapi-document-structure-resource-identification.yaml
-  - ./rules/jsonapi-document-structure-resource-object.yaml
-  - ./rules/jsonapi-document-structure-links.yaml
-  - ./rules/jsonapi-document-structure-meta-information.yaml
-  - ./rules/jsonapi-errors-ruleset.yaml
-
-  - ./rules/ll/jsonapi-document-structure-ruleset.yaml
-  - ./rules/ll/frosting-profile-ruleset.yaml
-  - ./rules/ll/frosting-profile-document-path-resource-plural-inflection.yaml
-  - ./rules/ll/frosting-profile-document-path-response-resource-singular-inflection.yaml

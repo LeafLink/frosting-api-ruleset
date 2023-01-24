@@ -6,10 +6,9 @@ const {Spectral} = require('@stoplight/spectral');
 const {Document, Parsers} = require('@stoplight/spectral');
 
 
-const RULESET_FILE = join(__dirname, '../../rules/ll/frosting-profile-document-path.yaml');
+const RULESET_FILE = join(__dirname, '../../rules/ll/unified-profile-document-structure-pagination.yaml');
 
-
-describe('frosting-profile-document-path ruleset', function () {
+describe('jsonapi-document-structure-pagination ruleset', function () {
 
   let spectral;
 
@@ -19,15 +18,28 @@ describe('frosting-profile-document-path ruleset', function () {
 
   });
 
-  describe('no-whitespace-or-hyphens', function () {
+  describe('pagination-all-keys', function () {
 
-    it('passes when there is no whitespace or hyphens', function (done) {
+    it('passes when all keys are present', function (done) {
 
       const doc = new Document(`
         openapi: 3.0.2
         paths:
-          /somepath:
+          /some_path:
             get:
+              parameters:
+                - in: query
+                  name: page[number]
+                  schema:
+                    type: integer
+                - in: query
+                  name: page[size]
+                  schema:
+                    type: integer
+                - in: query
+                  name: page[cursor]
+                  schema:
+                    type: string
               responses:
                 '200':
                   content:
@@ -58,13 +70,34 @@ describe('frosting-profile-document-path ruleset', function () {
 
     });
 
-    it('fails when the path includes whitespace or hyphens', function (done) {
+  });
+
+  describe('pagination-bad-key', function () {
+
+    it('fails when there is a bad key present', function (done) {
 
       const doc = new Document(`
         openapi: 3.0.2
         paths:
-          /somepath:
+          /some_path:
             get:
+              parameters:
+                - in: query
+                  name: page[number]
+                  schema:
+                    type: integer
+                - in: query
+                  name: page[size]
+                  schema:
+                    type: integer
+                - in: query
+                  name: page[cursor]
+                  schema:
+                    type: string
+                - in: query
+                  name: page[bad]
+                  schema:
+                    type: integer
               responses:
                 '200':
                   content:
@@ -78,8 +111,40 @@ describe('frosting-profile-document-path ruleset', function () {
                             type: array
                             items:
                               type: integer
-          /some bad path:
-            get:
+      `, Parsers.Yaml);
+
+      spectral.loadRuleset(RULESET_FILE)
+        .then(() => {
+
+          return spectral.run(doc);
+
+        })
+        .then((results) => {
+
+          expect(results.length).to.equal(1);
+          expect(results[0].code).to.equal('page-query-arguments-name');
+          done();
+
+        });
+
+    });
+
+  });
+
+  describe('pagination-only-get-requests', function () {
+
+    it('passes when the request is not a get request', function (done) {
+
+      const doc = new Document(`
+        openapi: 3.0.2
+        paths:
+          /some_path:
+            post:
+              parameters:
+                - in: query
+                  name: some_query
+                  schema:
+                    type: integer
               responses:
                 '200':
                   content:
@@ -93,8 +158,135 @@ describe('frosting-profile-document-path ruleset', function () {
                             type: array
                             items:
                               type: integer
-          /some-bad-path:
+      `, Parsers.Yaml);
+
+      spectral.loadRuleset(RULESET_FILE)
+        .then(() => {
+
+          return spectral.run(doc);
+
+        })
+        .then((results) => {
+
+          expect(results.length).to.equal(0);
+          done();
+
+        });
+
+    });
+
+  });
+
+  describe('pagination-missing-keys', function () {
+
+    it('passes with missing pagination query parameters', function (done) {
+
+      const doc = new Document(`
+        openapi: 3.0.2
+        paths:
+          /some_path:
             get:
+              parameters:
+                - in: query
+                  name: page[cursor]
+                  schema:
+                    type: string
+              responses:
+                '200':
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        type: object
+                        required:
+                        - data
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              type: integer
+      `, Parsers.Yaml);
+
+      spectral.loadRuleset(RULESET_FILE)
+        .then(() => {
+
+          return spectral.run(doc);
+
+        })
+        .then((results) => {
+
+          expect(results.length).to.equal(0);
+          done();
+
+        });
+
+    });
+
+  });
+
+  describe('pagination-path-keys', function () {
+
+    it('passes with path (not query) parameters', function (done) {
+
+      const doc = new Document(`
+        openapi: 3.0.2
+        paths:
+          /some_path/<thingy>:
+            get:
+              parameters:
+                - in: path
+                  name: thingy
+                  schema:
+                    type: integer
+              responses:
+                '200':
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        type: object
+                        required:
+                        - data
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              type: integer
+      `, Parsers.Yaml);
+
+      spectral.loadRuleset(RULESET_FILE)
+        .then(() => {
+
+          return spectral.run(doc);
+
+        })
+        .then((results) => {
+
+          expect(results.length).to.equal(0);
+          done();
+
+        });
+
+    });
+
+  });
+
+  describe('pagination-bad-value-type', function () {
+
+    it('fails if pagination parameter values are not integers', function (done) {
+
+      const doc = new Document(`
+        openapi: 3.0.2
+        paths:
+          /some_path:
+            get:
+              parameters:
+                - in: query
+                  name: page[number]
+                  schema:
+                    type: string
+                - in: query
+                  name: page[cursor]
+                  schema:
+                    type: integer
               responses:
                 '200':
                   content:
@@ -119,8 +311,8 @@ describe('frosting-profile-document-path ruleset', function () {
         .then((results) => {
 
           expect(results.length).to.equal(2);
-          expect(results[0].code).to.equal('no-whitespace-or-hyphens');
-          expect(results[1].code).to.equal('no-whitespace-or-hyphens');
+          expect(results[0].code).to.equal('page-query-arguments-size-number');
+          expect(results[1].code).to.equal('page-query-arguments-cursor');
           done();
 
         });
@@ -129,115 +321,20 @@ describe('frosting-profile-document-path ruleset', function () {
 
   });
 
-  describe('no-trailing-slash', function () {
+  describe('pagination-non-page-query-parameter', function () {
 
-    it('fails when the path includes a trailing slash', function (done) {
-
-      const doc = new Document(`
-        openapi: 3.0.2
-        paths:
-          /simplepath/:
-            get:
-              responses:
-                '200':
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        type: object
-                        required:
-                        - data
-                        properties:
-                          data:
-                            type: array
-                            items:
-                              type: integer
-          /somepath/users/:
-            get:
-              responses:
-                '200':
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        type: object
-                        required:
-                        - data
-                        properties:
-                          data:
-                            type: array
-                            items:
-                              type: integer
-          /somepath/users/1/more_paths/:
-            get:
-              responses:
-                '200':
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        type: object
-                        required:
-                        - data
-                        properties:
-                          data:
-                            type: array
-                            items:
-                              type: integer
-      `, Parsers.Yaml);
-
-      spectral.loadRuleset(RULESET_FILE)
-        .then(() => {
-
-          return spectral.run(doc);
-
-        })
-        .then((results) => {
-
-          expect(results.length).to.equal(3);
-          expect(results[0].code).to.equal('no-trailing-slash');
-          expect(results[1].code).to.equal('no-trailing-slash');
-          expect(results[2].code).to.equal('no-trailing-slash');
-          done();
-
-        });
-
-    });
-
-    it('passes when there is no trailing slash', function (done) {
+    it('passes if query parameter does not match the pagination regex', function (done) {
 
       const doc = new Document(`
         openapi: 3.0.2
         paths:
-          /simplepath:
+          /some_path:
             get:
-              responses:
-                '200':
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        type: object
-                        required:
-                        - data
-                        properties:
-                          data:
-                            type: array
-                            items:
-                              type: integer
-          /somepath/users:
-            get:
-              responses:
-                '200':
-                  content:
-                    application/vnd.api+json:
-                      schema:
-                        type: object
-                        required:
-                        - data
-                        properties:
-                          data:
-                            type: array
-                            items:
-                              type: integer
-          /somepath/users/1/more_paths:
-            get:
+              parameters:
+                - in: query
+                  name: thingy
+                  schema:
+                    type: string
               responses:
                 '200':
                   content:

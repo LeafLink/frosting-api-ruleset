@@ -4,8 +4,8 @@
   "description": "spectral rules for json:api",
   "main": "json-ruleset.yaml",
   "scripts": {
-    "compile": "./bin/compile.js -i ./frosting-ruleset.yaml -o frosting-ruleset.local && ./bin/compile.js -i ./upstream-ruleset.yaml -o upstream-ruleset.local",
-    "compile-ci": "./bin/compile.js -i ./frosting-ruleset.yaml -o frosting-ruleset.compiled && ./bin/compile.js -i ./upstream-ruleset.yaml -o upstream-ruleset.compiled",
+    "compile": "./bin/compile.js -i ./upstream-ruleset.yaml -o upstream-ruleset.local",
+    "compile-ci": "./bin/compile.js -i ./upstream-ruleset.yaml -o upstream-ruleset.compiled",
     "fix": "./node_modules/.bin/eslint --fix test/ && ./node_modules/.bin/prettier --write .",
     "test": "./node_modules/.bin/eslint test/ && ./node_modules/.bin/mocha --recursive",
     "lint": "./node_modules/.bin/eslint test/ && ./node_modules/.bin/prettier --check ."
@@ -19,8 +19,7 @@
     "api",
     "linting",
     "spectral",
-    "ruleset",
-    "jsonapi"
+    "ruleset"
   ],
   "author": "",
   "license": "MIT",

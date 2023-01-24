@@ -6,7 +6,7 @@ const {expect} = require('chai');
 const {Spectral} = require('@stoplight/spectral');
 const {getDocument} = require('../tooling/utils');
 
-const RULESET_FILE = join(__dirname, '../../rules/ll/frosting-profile-document-structure-filtering.yaml');
+const RULESET_FILE = join(__dirname, '../../rules/ll/unified-profile-document-structure-filtering.yaml');
 
 describe('jsonapi-document-structure-filtering-ruleset', function () {
 

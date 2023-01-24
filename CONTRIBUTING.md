@@ -14,7 +14,7 @@ Rules are separated into YAML files, stored in the `/rules/` directory and its s
 
 ### Naming
 
-Ruleset YAML files which derive from the JSON:API specification should have the `jsonapi-` prefix, while custom Frosting ruleset files should have the `frosting-` prefix. This helps make groupings clear to the casual browser, and improves organization.
+Ruleset YAML files which derive from the oas3 specification should have the `oas3-` prefix, while custom unified ruleset files should have the `unified-` prefix. This helps make groupings clear to the casual browser, and improves organization.
 
 ### Testing
 

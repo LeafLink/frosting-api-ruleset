@@ -1,9 +1,0 @@
-# Document Structure
-# https://jsonapi.org/format/#document-structure
-
-# *-ruleset.yaml files generally SHOULD NOT contain any testable rules.
-# all rules in this file MUST have corresponding tests.
-
-extends:
-  - ./jsonapi-document-structure-top-level.yaml
-  - ./jsonapi-document-structure-jsonapi-object.yaml

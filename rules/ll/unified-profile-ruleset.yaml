@@ -5,7 +5,7 @@
 # all rules in this file MUST have corresponding tests.
 
 extends:
-  - ./frosting-profile-document-path.yaml
-  - ./frosting-profile-document-structure-filtering.yaml
-  - ./frosting-profile-document-structure-member-names.yaml
-  - ./frosting-profile-document-structure-pagination.yaml
+  - ./unified-profile-document-path.yaml
+  - ./unified-profile-document-structure-filtering.yaml
+  - ./unified-profile-document-structure-member-names.yaml
+  - ./unified-profile-document-structure-pagination.yaml

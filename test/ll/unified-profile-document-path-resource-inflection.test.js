@@ -6,10 +6,10 @@ const {Spectral} = require('@stoplight/spectral');
 const {Document, Parsers} = require('@stoplight/spectral');
 
 
-const RULESET_FILE = join(__dirname, '../../rules/ll/frosting-profile-document-path-response-resource-singular-inflection.yaml');
+const RULESET_FILE = join(__dirname, '../../rules/ll/unified-profile-document-path-resource-plural-inflection.yaml');
 
 
-describe('frosting-profile-document-path-response-resource-inflection', function () {
+describe('unified-profile-document-path-resource-inflection-ruleset', function () {
 
   let spectral;
 
@@ -19,9 +19,9 @@ describe('frosting-profile-document-path-response-resource-inflection', function
 
   });
 
-  describe('no-plural-path-response-types', function () {
+  describe('no-singular-path-resource-names', function () {
 
-    it('passes when response type is singular', function (done) {
+    it('passes when resource name is plural', function (done) {
 
       const doc = new Document(`
         openapi: 3.0.2
@@ -40,14 +40,22 @@ describe('frosting-profile-document-path-response-resource-inflection', function
                           data:
                             type: array
                             items:
-                              $ref: "#/components/schemas/User"
-        components:
-          schemas:
-            User:
-              type: object
-              required:
-                - type
-                - id
+                              type: integer
+          /path/names/{id}:
+            get:
+              responses:
+                '200':
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        type: object
+                        required:
+                        - data
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              type: integer
       `, Parsers.Yaml);
 
       spectral.loadRuleset(RULESET_FILE)
@@ -58,8 +66,6 @@ describe('frosting-profile-document-path-response-resource-inflection', function
         })
         .then((results) => {
 
-          //eslint-disable-next-line no-console
-          console.log(results);
           expect(results.length).to.equal(0);
           done();
 
@@ -67,7 +73,7 @@ describe('frosting-profile-document-path-response-resource-inflection', function
 
     });
 
-    it('fails when response type is plural', function (done) {
+    it('fails when resource name is singular', function (done) {
 
       const doc = new Document(`
         openapi: 3.0.2
@@ -86,14 +92,22 @@ describe('frosting-profile-document-path-response-resource-inflection', function
                           data:
                             type: array
                             items:
-                              $ref: "#/components/schemas/Users"
-        components:
-          schemas:
-            Users:
-              type: object
-              required:
-                - type
-                - id
+                              type: integer
+          /path/name/{id}:
+            get:
+              responses:
+                '200':
+                  content:
+                    application/vnd.api+json:
+                      schema:
+                        type: object
+                        required:
+                        - data
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              type: integer
       `, Parsers.Yaml);
 
       spectral.loadRuleset(RULESET_FILE)
@@ -104,7 +118,7 @@ describe('frosting-profile-document-path-response-resource-inflection', function
         })
         .then((results) => {
 
-          expect(results.length).to.equal(1);
+          expect(results.length).to.equal(2);
           done();
 
         });

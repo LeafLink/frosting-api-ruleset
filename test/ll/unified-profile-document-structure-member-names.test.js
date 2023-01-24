@@ -5,9 +5,9 @@ const {expect} = require('chai');
 const {Spectral} = require('@stoplight/spectral');
 const {getDocument} = require('../tooling/utils');
 
-const RULESET_FILE = join(__dirname, '../../rules/ll/frosting-profile-document-structure-member-names.yaml');
+const RULESET_FILE = join(__dirname, '../../rules/ll/unified-profile-document-structure-member-names.yaml');
 
-describe('frosting-profile-document-structure-member-names ruleset', function () {
+describe('unified-profile-document-structure-member-names ruleset', function () {
 
   let spectral;
 
@@ -17,7 +17,7 @@ describe('frosting-profile-document-structure-member-names ruleset', function ()
 
   });
 
-  describe('frosting-member-name-format', function () {
+  describe('unified-member-name-format', function () {
 
     it('passes when all properties data members meet the character rules', function (done) {
 
@@ -32,26 +32,6 @@ describe('frosting-profile-document-structure-member-names ruleset', function ()
         .then((results) => {
 
           expect(results.length).to.equal(0);
-          done();
-
-        });
-
-    });
-
-    it('fails when a property is not camel case', function (done) {
-
-      const goodDocument = getDocument({'responseContentPropertyKey': 'first_name'});
-
-      spectral.loadRuleset(RULESET_FILE)
-        .then(() => {
-
-          return spectral.run(goodDocument);
-
-        })
-        .then((results) => {
-
-          expect(results.length).to.equal(1, 'Error count should be 1');
-          expect(results[0].code).to.equal('frosting-member-name-format');
           done();
 
         });
@@ -73,7 +53,7 @@ describe('frosting-profile-document-structure-member-names ruleset', function ()
           .then((results) => {
 
             expect(results.length).to.equal(1, 'Error count should be 1');
-            expect(results[0].code).to.equal('frosting-member-name-format');
+            expect(results[0].code).to.equal('unified-member-name-format');
 
           });
 

@@ -4,9 +4,9 @@ const {join} = require('path');
 const {expect} = require('chai');
 const {Spectral} = require('@stoplight/spectral');
 const {Document, Parsers} = require('@stoplight/spectral');
-const RULESET_FILE = join(__dirname, '../../rules/ll/frosting-responses-rate-limit.yaml');
+const RULESET_FILE = join(__dirname, '../../rules/ll/unified-responses-rate-limit.yaml');
 
-describe('frosting-profile-document-path-resource-inflection-ruleset', function () {
+describe('unified-profile-document-path-resource-inflection-ruleset', function () {
 
   let spectral;
 

@@ -1,9 +1,0 @@
-# Main Frosting API Profile RuleSet
-# https://leaflink.atlassian.net/wiki/spaces/PLAT/pages/2434302607/Frosting+API+Specification+JSON+API+Profile
-
-# *-ruleset.yaml files SHOULD NOT contain any testable items.
-
-extends:
-  - ./upstream-ruleset.yaml
-  - ./rules/ll/frosting-responses-rate-limit.yaml
-  - ./rules/ll/frosting-headers-auth.yaml
